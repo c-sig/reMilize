@@ -228,7 +228,7 @@ class Job(commands.Cog):
         await ctx.respond(f"Job {job_name} unassigned.")
 
     @Job.command(description="Update job status")
-    async def status(self,
+    async def update(self,
                      ctx,
                      group_name: discord.Option(str,
                                                 autocomplete=discord.utils.basic_autocomplete(file_check().keys())),
@@ -245,7 +245,7 @@ class Job(commands.Cog):
         if user_id is None:
             await ctx.respond(f"Job {job_name} is not claimed.")
             return
-        if user_id != ctx.user.id or not multiple_check(ctx.user.id, ['owners', 'managers']):
+        if (not multiple_check(ctx.user.id, ['owners', 'managers'])) or (user_id != ctx.user.id):
             await ctx.respond(f"You can only update the status of jobs that you claimed.")
             return
         # update status
@@ -253,6 +253,7 @@ class Job(commands.Cog):
         data[group_name]['series_list'][series_name]['chapter_list'][chapter_number]['job_list'][job_name][
             'status'] = status
         write_database(data)
+        await ctx.respond(f"Job updated to {status}")
         # if marked completed, check if all jobs of the same order are completed, if yes, ping the next job of order
         # +1 using the role_id defined in the chapter
         if status == 'Completed':
@@ -329,21 +330,29 @@ class Job(commands.Cog):
                             inline=False)
         await ctx.respond(embed=embed)
 
-    @Job.command(description="List all claimed jobs of the user as well as their status")
-    async def todo(self, ctx):
+    @Job.command(description="Looks for user in a job and lists all jobs that user is assigned to")
+    async def todo(self, ctx, user_id: discord.User = None):
+        if user_id is None:
+            user_id = ctx.user
+
         if not multiple_check(ctx.user.id, ['owners', 'managers', 'members']):
             await ctx.respond("You do not have permission to use this command.")
             return
-        embed = discord.Embed(title=f"Jobs claimed by {ctx.user.display_name}")
+
+        # list jobs
+        embed = discord.Embed(title=f"Jobs assigned to {user_id.display_name}")
         for group in file_check():
             for series in file_check()[group]['series_list']:
                 for chapter in file_check()[group]['series_list'][series]['chapter_list']:
                     for job in file_check()[group]['series_list'][series]['chapter_list'][chapter]['job_list']:
                         if file_check()[group]['series_list'][series]['chapter_list'][chapter]['job_list'][job][
-                            'user_id'] == ctx.user.id:
-                            embed.add_field(name=f"{group} - {series} - {chapter} - {job}",
-                                            value=f"Status: {file_check()[group]['series_list'][series]['chapter_list'][chapter]['job_list'][job]['status']}",
-                                            inline=False)
+                            'user_id'] == user_id.id:
+                            # only include jobs that are not marked completed
+                            if file_check()[group]['series_list'][series]['chapter_list'][chapter]['job_list'][job][
+                                'status'] != 'Completed':
+                                embed.add_field(name=f"{group} - {series} - {chapter} - {job}",
+                                                value=f"Status: {file_check()[group]['series_list'][series]['chapter_list'][chapter]['job_list'][job]['status']}",
+                                                inline=False)
         await ctx.respond(embed=embed)
 
     # # function that checks for vacant jobs in every chapter and pings using the role_id provided in the database, should occur every hour

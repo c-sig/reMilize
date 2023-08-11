@@ -435,9 +435,9 @@ class Series(commands.Cog):
                                                           file_check().keys())),
                            series_name: discord.Option(str,
                                                        autocomplete=discord.utils.basic_autocomplete(get_series_list)),
-                           job_type: discord.Option(str, choices=default_job_types),
+                           job_type: str,
                            order: int,
-                           role_id: int):
+                           role_id: discord.Role):
         if not multiple_check(ctx.user.id, ['owners', 'managers']):
             await ctx.respond("You do not have permission to use this command.")
             return
@@ -451,7 +451,7 @@ class Series(commands.Cog):
             return
         # write job_type to series under job_types
         data = file_check()
-        data[group_name]["series_list"][series_name]["job_types"][job_type] = {"order": order, "role_id": role_id}
+        data[group_name]["series_list"][series_name]["job_types"][job_type] = {"order": order, "role_id": role_id.id}
         write_database(data)
         await ctx.respond(f"{job_type} has been added to series {series_name}.")
         return

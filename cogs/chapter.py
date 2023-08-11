@@ -77,6 +77,7 @@ class Chapter(commands.Cog):
         data = file_check()
         data[group_name]['series_list'][series_name]['chapter_list'][chapter_name] = {}
         data[group_name]['series_list'][series_name]['chapter_list'][chapter_name]['job_list'] = {}
+        data[group_name]['series_list'][series_name]['chapter_list'][chapter_name]['chapter_status'] = "Backlog"
         for job_type in data[group_name]['series_list'][series_name]['job_types']:
             data[group_name]['series_list'][series_name]['chapter_list'][chapter_name]['job_list'][job_type] = {}
             data[group_name]['series_list'][series_name]['chapter_list'][chapter_name]['job_list'][job_type]['user_id'] = None

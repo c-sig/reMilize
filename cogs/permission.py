@@ -65,16 +65,17 @@ class Permissions(commands.Cog):
     async def list(self,
                    ctx,
                    permission_group: discord.Option(str, choices=['owners', 'managers', 'members'])):
-        if multiple_check(ctx.user.id, ['owners', 'managers', 'members']):  # permission check
+        if not multiple_check(ctx.user.id, ['owners', 'managers', 'members']):
+            await ctx.respond('You are not authorized to perform this command.')
+        else:
             if permission_group in get_groups():
-                members = []
-                for member in get_members(permission_group):
-                    members.append(self.bot.get_user(member).name)
-                await ctx.respond(f'Users in {permission_group}: {members}')
+                try:
+                    members = [self.bot.get_user(member).name for member in get_members(permission_group)]
+                    await ctx.respond(f'Users in {permission_group}: {", ".join(members)}')
+                except Exception as e:
+                    await ctx.respond('An error occurred while fetching member information.')
             else:
                 await ctx.respond(f'{permission_group} does not exist.')
-        else:
-            await ctx.respond('You are not authorized to perform this command.')
 
     @Permissions.command(name='add', description='Adds a user to a permission group')
     async def add(self,

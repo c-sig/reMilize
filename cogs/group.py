@@ -41,7 +41,7 @@ class Group(commands.Cog):
     async def add(self,
                   ctx,
                   group_name: str, ):
-        if not multiple_check(ctx.user.id, ['owners', 'managers']):
+        if not multiple_check(ctx.user.id, ['owners']):
             await ctx.respond("You do not have permission to use this command.")
             return
         # check if group is already in database
@@ -59,7 +59,7 @@ class Group(commands.Cog):
                      ctx,
                      group_name: discord.Option(str,
                                                 autocomplete=discord.utils.basic_autocomplete(file_check().keys()))):
-        if not multiple_check(ctx.user.id, ['owners', 'managers']):
+        if not multiple_check(ctx.user.id, ['owners']):
             await ctx.respond("You do not have permission to use this command.")
             return
         # check if group is in database
@@ -78,7 +78,7 @@ class Group(commands.Cog):
                      group_name: discord.Option(str,
                                                 autocomplete=discord.utils.basic_autocomplete(file_check().keys())),
                      new_group_name: str):
-        if not multiple_check(ctx.user.id, ['owners', 'managers']):
+        if not multiple_check(ctx.user.id, ['owners']):
             await ctx.respond("You do not have permission to use this command.")
             return
         # check if group is in database
